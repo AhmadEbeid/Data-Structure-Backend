@@ -5,10 +5,11 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.http import Http404,HttpResponse
+from django.db.models import Q
 
-from .serializers import UserSerializer, ProfileSerializer, PostsSerializer, GroupSerializer, Friendshiperializer
+from .serializers import UserSerializer, ProfileSerializer, PostsSerializer, GroupSerializer, Friendshiperializer, CommentSerializer
 
-from .models import ProfileModel, PostsModel, GroupModel, FriendshipModel
+from .models import ProfileModel, PostsModel, GroupModel, FriendshipModel, CommentModel
 
 # Create your views here.
 
@@ -44,13 +45,14 @@ class SignUpView(APIView):
             except User.DoesNotExist:
                 try:
                     user = User.objects.create_user(username=request.data["email"],email=request.data["email"],password=request.data["password"])
-                    profile = ProfileModel.objects.create(
+                    ProfileModel.objects.create(
                       user = user,
                       name=request.data["name"],
                       mobile=request.data["mobile"],
                       birthday=request.data["birthday"],
                       gender=request.data["gender"]
                     )
+                    FriendshipModel.objects.create(user=user)
                 except:
                     Response({"error": "Please try again later"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
                 
@@ -72,7 +74,7 @@ class MyPostsView(APIView):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
         # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjozLCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU0NjI1MjUsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.YpW0-kIO6wd7DOch1e8FTI7wmqtsFQh_J-L4RgZ8QAA"
+        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -85,6 +87,7 @@ class MyPostsView(APIView):
             # getting user from the email sent in
             user = User.objects.get(email=token_info["email"])
             posts = PostsModel.objects.filter(user=user, group=False)
+            print(posts)
             serializer = PostsSerializer(posts, many=True)
             json = serializer.data
             for post in json:
@@ -96,6 +99,14 @@ class MyPostsView(APIView):
                 user = User.objects.get(pk=id)
                 likes.append({"name":ProfileModel.objects.get(user=user).name, "id": id})
               post['likes'] = likes
+
+              comments = []
+              for id in post['comments']:
+                comment = CommentModel.objects.get(pk=id)
+                user = comment.user
+                text = comment.text
+                comments.append({"name":ProfileModel.objects.get(user=user).name, "id": id, "text":text})
+              post['comments'] = comments
             return Response(json, status=status.HTTP_200_OK)
   
   # create new post on wall
@@ -103,7 +114,7 @@ class MyPostsView(APIView):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
         # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjozLCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU0NjI1MjUsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.YpW0-kIO6wd7DOch1e8FTI7wmqtsFQh_J-L4RgZ8QAA"
+        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -126,7 +137,7 @@ class postGetView(APIView):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
         # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjozLCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU0NjI1MjUsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.YpW0-kIO6wd7DOch1e8FTI7wmqtsFQh_J-L4RgZ8QAA"
+        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -148,6 +159,14 @@ class postGetView(APIView):
               user = User.objects.get(pk=id)
               likes.append({"name":ProfileModel.objects.get(user=user).name, "id": id})
             postS['likes'] = likes
+            
+            comments = []
+            for id in postS['comments']:
+              comment = CommentModel.objects.get(pk=id)
+              user = comment.user
+              text = comment.text
+              comments.append({"name":ProfileModel.objects.get(user=user).name, "id": id, "text":text})
+            postS['comments'] = comments
             return Response(postS, status=status.HTTP_200_OK)
   
   # Like post
@@ -155,7 +174,7 @@ class postGetView(APIView):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
         # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjozLCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU0NjI1MjUsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.YpW0-kIO6wd7DOch1e8FTI7wmqtsFQh_J-L4RgZ8QAA"
+        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -186,6 +205,13 @@ class postGetView(APIView):
               user = User.objects.get(pk=id)
               likes.append({"name":ProfileModel.objects.get(user=user).name, "id": id})
             postS['likes'] = likes
+            comments = []
+            for id in postS['comments']:
+              comment = CommentModel.objects.get(pk=id)
+              user = comment.user
+              text = comment.text
+              comments.append({"name":ProfileModel.objects.get(user=user).name, "id": id, "text":text})
+            postS['comments'] = comments
             return Response(postS, status=status.HTTP_200_OK)
     
   # delete post
@@ -193,7 +219,7 @@ class postGetView(APIView):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
         # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjozLCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU0NjI1MjUsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.YpW0-kIO6wd7DOch1e8FTI7wmqtsFQh_J-L4RgZ8QAA"
+        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -230,8 +256,169 @@ class userProfilePageView(APIView):
         user = User.objects.get(pk=id)
         likes.append({"name":ProfileModel.objects.get(user=user).name, "id": id})
       post['likes'] = likes
+      comments = []
+      for id in post['comments']:
+        comment = CommentModel.objects.get(pk=id)
+        user = comment.user
+        text = comment.text
+        comments.append({"name":ProfileModel.objects.get(user=user).name, "id": id, "text":text})
+      post['comments'] = comments
   
     return Response({"profile":profileSerializer.data,"post":postJson})
+  
+
+class MyFriendsView(APIView):
+  # get my friends
+  def get(self, request):
+    try:
+        token = request.META.get('HTTP_AUTHORIZATION', '')
+        # token = token.split(" ")[1]
+        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
+    except :
+        return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        try:
+            token_info = jwt_decode_handler(token)  # decrypting the token
+        except :
+            return Response({"error": "token can't be decrypted"}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            # getting user from the email sent in
+            user = User.objects.get(email=token_info["email"])
+            friends = FriendshipModel.objects.get(user=user)
+            serializer = Friendshiperializer(friends)
+            data = serializer.data
+            friends = []
+            for id in data['friendsList']:
+              user = User.objects.get(pk=id)
+              friends.append({"name":ProfileModel.objects.get(user=user).name, "id": id})
+            data['friendsList'] = friends
+            return Response(data, status=status.HTTP_200_OK)
+
+
+class AllFriendsView(APIView):
+  # get my friend friends
+  def get(self, request, pk):
+    try:
+        token = request.META.get('HTTP_AUTHORIZATION', '')
+        # token = token.split(" ")[1]
+        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
+    except :
+        return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        try:
+            token_info = jwt_decode_handler(token)  # decrypting the token
+        except :
+            return Response({"error": "token can't be decrypted"}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            # getting user from the email sent in
+            user = User.objects.get(pk=pk)
+            friends = FriendshipModel.objects.get(user=user)
+            serializer = Friendshiperializer(friends)
+            data = serializer.data
+            friends = []
+            for id in data['friendsList']:
+              user = User.objects.get(pk=id)
+              friends.append({"name":ProfileModel.objects.get(user=user).name, "id": id})
+            data['friendsList'] = friends
+            return Response(data, status=status.HTTP_200_OK)
+
+
+class PeopleView(APIView):
+  # add friend
+  def post(self, request, pk):
+    try:
+        token = request.META.get('HTTP_AUTHORIZATION', '')
+        # token = token.split(" ")[1]
+        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
+    except :
+        return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        try:
+            token_info = jwt_decode_handler(token)  # decrypting the token
+        except :
+            return Response({"error": "token can't be decrypted"}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            # getting user from the email sent in
+            user = User.objects.get(email=token_info["email"])
+            friends = FriendshipModel.objects.get(user=user)
+            userAdd = User.objects.get(pk=pk)
+            friends.friendsList.add(userAdd)
+            friends.save()
+
+            friendsOther = FriendshipModel.objects.get(user=userAdd)
+            friendsOther.friendsList.add(user)
+            friendsOther.save()
+
+            serializer = Friendshiperializer(friends)
+            data = serializer.data
+            friends = []
+            for id in data['friendsList']:
+              user = User.objects.get(pk=id)
+              friends.append({"name":ProfileModel.objects.get(user=user).name, "id": id})
+            data['friendsList'] = friends
+            return Response(data, status=status.HTTP_200_OK)
+  
+  # unfriend
+  def delete(self, request, pk):
+    try:
+        token = request.META.get('HTTP_AUTHORIZATION', '')
+        # token = token.split(" ")[1]
+        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
+    except :
+        return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        try:
+            token_info = jwt_decode_handler(token)  # decrypting the token
+        except :
+            return Response({"error": "token can't be decrypted"}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            # getting user from the email sent in
+            user = User.objects.get(email=token_info["email"])
+            friends = FriendshipModel.objects.get(user=user)
+            userRemove = User.objects.get(pk=pk)
+            friends.friendsList.remove(userRemove)
+            friends.save()
+
+            friendsOther = FriendshipModel.objects.get(user=userRemove)
+            friendsOther.friendsList.remove(user)
+            friendsOther.save()
+
+            serializer = Friendshiperializer(friends)
+            data = serializer.data
+            friends = []
+            for id in data['friendsList']:
+              user = User.objects.get(pk=id)
+              friends.append({"name":ProfileModel.objects.get(user=user).name, "id": id})
+            data['friendsList'] = friends
+            return Response(data, status=status.HTTP_200_OK)
+
+
+class searchPeople(APIView):
+  # seach for people
+  def get(self, request, value):
+    try:
+        token = request.META.get('HTTP_AUTHORIZATION', '')
+        # token = token.split(" ")[1]
+        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
+    except :
+        return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        try:
+            token_info = jwt_decode_handler(token)  # decrypting the token
+        except :
+            return Response({"error": "token can't be decrypted"}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            # getting user from the email sent in
+            user = User.objects.get(email=token_info["email"])
+            profiles = ProfileModel.objects.exclude(user=user).filter(Q(name__contains=value) | Q(mobile__contains=value))
+            serializer = ProfileSerializer(profiles, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 # class GroupPostsView(APIView):
@@ -254,24 +441,4 @@ class userProfilePageView(APIView):
 #   # delete group
 #   def delete(self, request, pk):
   
-
-# class AllFriendsView(APIView):
-#   # get my friend friends
-#   def get(self, request, pk):
-  
-
-# class MyFriendsView(APIView):
-#   # get my friends
-#   def get(self, request):
-  
-#   # unfriend
-#   def delete(self, request, pk):
-
-
-# class PeopleView(APIView):
-#   # search for friend
-#   def get(self, request, value):
-
-#   # add friend
-#   def post(self, request, pk):
 

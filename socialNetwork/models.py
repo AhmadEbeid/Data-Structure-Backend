@@ -22,16 +22,24 @@ class ProfileModel(models.Model):
 
 class FriendshipModel(models.Model):
   user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True, related_name='friends')
-  friendsList = models.ManyToManyField(User)
+  friendsList = models.ManyToManyField(User, blank=True)
 
   def __str__(self):
       return self.user.__str__()
+
+class CommentModel(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
+  text = models.TextField()
+  
+  def __str__(self):
+      return self.user.__str__() + " : " + self.text.__str__()  
 
 class PostsModel(models.Model):
   user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True, related_name='posts')
   group = models.BooleanField(default=False)
   text = models.TextField(max_length=5000)
   likes =  models.ManyToManyField(User, blank=True)
+  comments = models.ManyToManyField(CommentModel, blank=True)
   created_date = models.DateField(auto_now=True)
 
   def __str__(self):
@@ -46,3 +54,5 @@ class GroupModel(models.Model):
 
   def __str__(self):
       return self.name.__str__() + ' Admin: ' + self.admin.__str__()
+
+
