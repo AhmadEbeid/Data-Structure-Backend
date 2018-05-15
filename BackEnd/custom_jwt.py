@@ -6,6 +6,7 @@ from calendar import timegm
 import datetime as date
 
 from datetime import datetime
+from django.conf import settings
 
 from rest_framework_jwt.compat import get_username
 from rest_framework_jwt.compat import get_username_field
@@ -28,7 +29,7 @@ def jwt_payload_handler(user):
 
     prof=ProfileModel.objects.get(user__pk=user.pk)
     name = prof.name
-    profilePic = prof.image.url
+    profilePic = settings.BASE_URL + prof.image.url
             
     payload = {
         'user_id': user.pk,
