@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -104,8 +105,8 @@ JWT_AUTH = {
     'rest_framework_jwt.utils.jwt_decode_handler',
 
     'JWT_PAYLOAD_HANDLER':
-    # 'ASURTBackend.custom_jwt.jwt_payload_handler',
-    'rest_framework_jwt.utils.jwt_payload_handler',
+    'BackEnd.custom_jwt.jwt_payload_handler',
+    # 'rest_framework_jwt.utils.jwt_payload_handler',
 
     'JWT_PAYLOAD_GET_USER_ID_HANDLER':
     'rest_framework_jwt.utils.jwt_get_user_id_from_payload_handler',
@@ -171,7 +172,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Cairo'
 
 USE_I18N = True
 
@@ -189,7 +190,11 @@ USE_TZ = True
 
 # default static files settings for PythonAnywhere.
 # see https://help.pythonanywhere.com/pages/DjangoStaticFiles for more info
-MEDIA_ROOT = u'/home/aebeid/Data-Structure-Backend/media'
-MEDIA_URL = '/media/'
-STATIC_ROOT = u'/home/aebeid/Data-Structure-Backend/static'
+# MEDIA_ROOT = u'/home/aebeid/Data-Structure-Backend/media'
+# MEDIA_URL = '/media/'
+# STATIC_ROOT = u'/home/aebeid/Data-Structure-Backend/static'
+# STATIC_URL = '/static/'
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')

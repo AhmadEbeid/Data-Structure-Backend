@@ -15,6 +15,7 @@ class ProfileModel(models.Model):
   mobile = models.CharField(max_length=15, unique=True)
   birthday = models.DateField()
   gender = models.CharField(max_length=15, choices=gender)
+  image = models.FileField(upload_to='profile/', default='profile/profile.png')
   created_date = models.DateField(auto_now=True)
 
   def __str__(self):

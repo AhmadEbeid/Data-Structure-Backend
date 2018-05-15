@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import ProfileModel, PostsModel, GroupModel, FriendshipModel, CommentModel
+from BackEnd.fields import Base64FileField
 
 class UserSerializer(serializers.ModelSerializer):
   class Meta:
@@ -8,9 +9,10 @@ class UserSerializer(serializers.ModelSerializer):
     fields = ('password', 'email',)
 
 class ProfileSerializer(serializers.ModelSerializer):
+  image = Base64FileField(max_length=None,use_url=True,required=False)
   class Meta:
     model = ProfileModel
-    fields = ('name', 'mobile', 'birthday', 'gender')
+    fields = ('name', 'mobile', 'birthday', 'gender', 'image')
         
 
 class CommentSerializer(serializers.ModelSerializer):
