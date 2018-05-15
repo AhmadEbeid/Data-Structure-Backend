@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.http import Http404,HttpResponse
 from django.db.models import Q
+from django.conf import settings
 
 from .serializers import UserSerializer, ProfileSerializer, PostsSerializer, GroupSerializer, FriendshipSerializer, CommentSerializer
 
@@ -439,9 +440,8 @@ class FriednsRepresentation(APIView):
             data["id"] = profile.user.id
             data["friendsList"] = friendsList
             users.append(data)
-
         for profile in users:
-            nodes.append({ "id": profile["id"], "label": profile["name"], "image": profile["image"], "shape": 'image' })
+            nodes.append({ "id": profile["id"], "label": profile["name"], "image": settings.BASE_URL+profile["image"], "shape": 'image' })
             for user in profile["friendsList"]:
                 # edges.append({ from: profile.user.id, to: user.id, length: 150 })
                 edges.append({ "from":profile["id"], "to": user })
