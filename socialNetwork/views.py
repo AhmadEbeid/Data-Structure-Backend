@@ -45,13 +45,14 @@ class SignUpView(APIView):
             except User.DoesNotExist:
                 try:
                     user = User.objects.create_user(username=request.data["email"],email=request.data["email"],password=request.data["password"])
-                    ProfileModel.objects.create(
-                      user = user,
-                      name=request.data["name"],
-                      mobile=request.data["mobile"],
-                      birthday=request.data["birthday"],
-                      gender=request.data["gender"]
-                    )
+                    # ProfileModel.objects.create(
+                    #   user = user,
+                    #   name=request.data["name"],
+                    #   mobile=request.data["mobile"],
+                    #   birthday=request.data["birthday"],
+                    #   gender=request.data["gender"]
+                    # )
+                    profileSerializer.save(user=user)
                     FriendshipModel.objects.create(user=user)
                 except:
                     Response({"error": "Please try again later"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
