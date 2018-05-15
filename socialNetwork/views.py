@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate
 from django.http import Http404,HttpResponse
 from django.db.models import Q
 
-from .serializers import UserSerializer, ProfileSerializer, PostsSerializer, GroupSerializer, Friendshiperializer, CommentSerializer
+from .serializers import UserSerializer, ProfileSerializer, PostsSerializer, GroupSerializer, FriendshipSerializer, CommentSerializer
 
 from .models import ProfileModel, PostsModel, GroupModel, FriendshipModel, CommentModel
 
@@ -287,7 +287,7 @@ class MyFriendsView(APIView):
             # getting user from the email sent in
             user = User.objects.get(email=token_info["email"])
             friends = FriendshipModel.objects.get(user=user)
-            serializer = Friendshiperializer(friends)
+            serializer = FriendshipSerializer(friends)
             data = serializer.data
             friends = []
             for id in data['friendsList']:
@@ -316,7 +316,7 @@ class AllFriendsView(APIView):
             # getting user from the email sent in
             user = User.objects.get(pk=pk)
             friends = FriendshipModel.objects.get(user=user)
-            serializer = Friendshiperializer(friends)
+            serializer = FriendshipSerializer(friends)
             data = serializer.data
             friends = []
             for id in data['friendsList']:
@@ -353,7 +353,7 @@ class PeopleView(APIView):
             friendsOther.friendsList.add(user)
             friendsOther.save()
 
-            serializer = Friendshiperializer(friends)
+            serializer = FriendshipSerializer(friends)
             data = serializer.data
             friends = []
             for id in data['friendsList']:
@@ -388,7 +388,7 @@ class PeopleView(APIView):
             friendsOther.friendsList.remove(user)
             friendsOther.save()
 
-            serializer = Friendshiperializer(friends)
+            serializer = FriendshipSerializer(friends)
             data = serializer.data
             friends = []
             for id in data['friendsList']:
@@ -421,6 +421,51 @@ class searchPeople(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class FriednsRepresentation(APIView):
+    def get(self, request):
+        nodes = []
+        edges = []
+
+        users = []
+        profiles = ProfileModel.objects.all()
+        for profile in profiles:
+            Profile = ProfileSerializer(profile)
+            friends = FriendshipModel.objects.get(user = profile.user)
+            serializer = FriendshipSerializer(friends)
+            friendsList = serializer.data['friendsList']
+            data = {}
+            data["name"] = profile.name
+            data["image"] = profile.image.url
+            data["id"] = profile.user.id
+            data["friendsList"] = friendsList
+            users.append(data)
+
+        for profile in users:
+            nodes.append({ "id": profile["id"], "label": profile["name"], "image": profile["image"], "shape": 'image' })
+            for user in profile["friendsList"]:
+                # edges.append({ from: profile.user.id, to: user.id, length: 150 })
+                edges.append({ "from":profile["id"], "to": user })
+
+                num = my_search(user, users, 'id')
+                if num > -1:
+                    users[num]["friendsList"].remove(profile["id"])
+                    print(users)
+
+        return Response({"nodes":nodes,"edges":edges}, status=status.HTTP_200_OK)
+
+
+def binary_search(number, array, key, lo, hi):
+    if hi < lo: return -1       # no more numbers
+    mid = (lo + hi) // 2        # midpoint in array
+    if number == array[mid][key]:
+        return mid                  # number found here
+    elif number < array[mid][key]:
+        return binary_search(number, array, key, lo, mid - 1)     # try left of here
+    else:
+        return binary_search(number, array, key, mid + 1, hi)     # try above here
+ 
+def my_search(num, array, key):
+    return binary_search(num, array, key, 0, len(array) - 1)
 
 # class GroupPostsView(APIView):
 #   # get current my posts

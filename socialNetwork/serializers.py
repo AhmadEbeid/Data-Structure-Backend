@@ -32,7 +32,7 @@ class GroupSerializer(serializers.ModelSerializer):
     model = GroupModel
     fields = '__all__'
   
-class Friendshiperializer(serializers.ModelSerializer):
+class FriendshipSerializer(serializers.ModelSerializer):
   class Meta:
     model = FriendshipModel
     fields = '__all__'

@@ -29,5 +29,5 @@ urlpatterns = [
     url(r'^people/(?P<pk>[0-9]+)/$', views.PeopleView.as_view()),
     url(r'^search/(?P<value>[\w\-]+)/$', views.searchPeople.as_view()),
     url(r'^friendsOfFriend/(?P<pk>[0-9]+)/$', views.AllFriendsView.as_view()),
-        
+    url(r'^FriednsRepresentation/$', views.FriednsRepresentation.as_view()),
 ]
