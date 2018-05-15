@@ -444,7 +444,7 @@ class FriednsRepresentation(APIView):
             nodes.append({ "id": profile["id"], "label": profile["name"], "image": settings.BASE_URL+profile["image"], "shape": 'image' })
             for user in profile["friendsList"]:
                 # edges.append({ from: profile.user.id, to: user.id, length: 150 })
-                edges.append({ "from":profile["id"], "to": user })
+                edges.append({ "from":profile["id"], "to": user, length: 200 })
 
                 num = my_search(user, users, 'id')
                 if num > -1:
