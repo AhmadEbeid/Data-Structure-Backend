@@ -75,8 +75,7 @@ class MyPostsView(APIView):
   def get(self, request):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
-        # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        token = token.split(" ")[1]
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -115,8 +114,7 @@ class MyPostsView(APIView):
   def post(self, request):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
-        # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        token = token.split(" ")[1]
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -138,8 +136,7 @@ class postGetView(APIView):
   def get(self, request, pk):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
-        # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        token = token.split(" ")[1]
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -175,8 +172,7 @@ class postGetView(APIView):
   def post(self, request, pk):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
-        # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        token = token.split(" ")[1]
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -220,8 +216,7 @@ class postGetView(APIView):
   def delete(self, request, pk):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
-        # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        token = token.split(" ")[1]
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -274,8 +269,7 @@ class MyFriendsView(APIView):
   def get(self, request):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
-        # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        token = token.split(" ")[1]
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -303,8 +297,7 @@ class AllFriendsView(APIView):
   def get(self, request, pk):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
-        # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        token = token.split(" ")[1]
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -332,8 +325,7 @@ class PeopleView(APIView):
   def post(self, request, pk):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
-        # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        token = token.split(" ")[1]
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -367,8 +359,7 @@ class PeopleView(APIView):
   def delete(self, request, pk):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
-        # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        token = token.split(" ")[1]
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -404,8 +395,7 @@ class searchPeople(APIView):
   def get(self, request, value):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
-        # token = token.split(" ")[1]
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6ImEuZWJlaWRAaG90bWFpbC5jb20iLCJleHAiOjE1MjU1NTAwNDMsImVtYWlsIjoiYS5lYmVpZEBob3RtYWlsLmNvbSJ9.Iso7EXnL8JsILovuehaJ5QjvnlOGeyC8VjqWli2jVDU"
+        token = token.split(" ")[1]
         jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
     except :
         return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
