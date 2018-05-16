@@ -166,6 +166,8 @@ class wallPosts(APIView):
                     likes = []
                     boolValue = False
                     for id in post['likes']:
+                        print(id)
+                        print(MainUserID)
                         if MainUserID == id:
                             boolValue = True
                         user = User.objects.get(pk=id)
@@ -341,7 +343,7 @@ class userProfilePageView(APIView):
         user = User.objects.get(pk=pk)
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)   
-         
+
     profile = ProfileModel.objects.get(user=user)
     profileSerializer = ProfileSerializer(profile)
     profileData = profileSerializer.data
@@ -358,7 +360,9 @@ class userProfilePageView(APIView):
         likes = []
         boolValue = False
         for id in post['likes']:
-            if pk == id:
+            print(id)
+            print(pk)
+            if int(pk) == id:
                 boolValue = True
             user = User.objects.get(pk=id)
             prof = ProfileModel.objects.get(user=user)
@@ -405,7 +409,8 @@ class MyFriendsView(APIView):
             friends = []
             for id in data['friendsList']:
               user = User.objects.get(pk=id)
-              friends.append({"name":ProfileModel.objects.get(user=user).name, "id": id})
+              prof = ProfileModel.objects.get(user=user)
+              friends.append({"image":settings.BASE_URL+prof.image.url,"name":prof.name, "id": id})
             data['friendsList'] = friends
             return Response(data, status=status.HTTP_200_OK)
 
