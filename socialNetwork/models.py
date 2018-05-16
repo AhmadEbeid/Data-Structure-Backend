@@ -36,9 +36,9 @@ class CommentModel(models.Model):
       return self.user.__str__() + " : " + self.text.__str__()  
 
 class PostsModel(models.Model):
-  user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True, related_name='posts')
+  user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
   group = models.BooleanField(default=False)
-  text = models.TextField(max_length=5000)
+  text = models.TextField(max_length=6000)
   likes =  models.ManyToManyField(User, blank=True)
   comments = models.ManyToManyField(CommentModel, blank=True)
   created_date = models.DateField(auto_now=True)

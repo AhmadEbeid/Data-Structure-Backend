@@ -14,6 +14,12 @@ class ProfileSerializer(serializers.ModelSerializer):
     model = ProfileModel
     fields = ('name', 'mobile', 'birthday', 'gender', 'image')
         
+class ProfileSerializer2(serializers.ModelSerializer):
+  image = Base64FileField(max_length=None,use_url=True,required=False)
+  class Meta:
+    model = ProfileModel
+    fields = ('name', 'mobile', 'birthday', 'gender', 'image', 'pk')
+        
 
 class CommentSerializer(serializers.ModelSerializer):
   class Meta:

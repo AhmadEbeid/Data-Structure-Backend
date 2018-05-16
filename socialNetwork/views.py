@@ -8,7 +8,7 @@ from django.http import Http404,HttpResponse
 from django.db.models import Q
 from django.conf import settings
 
-from .serializers import UserSerializer, ProfileSerializer, PostsSerializer, GroupSerializer, FriendshipSerializer, CommentSerializer
+from .serializers import UserSerializer, ProfileSerializer, ProfileSerializer2, PostsSerializer, GroupSerializer, FriendshipSerializer, CommentSerializer
 
 from .models import ProfileModel, PostsModel, GroupModel, FriendshipModel, CommentModel
 
@@ -131,8 +131,67 @@ class MyPostsView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class wallPosts(APIView):
+    def get(self, request):
+        try:
+            token = request.META.get('HTTP_AUTHORIZATION', '')
+            token = token.split(" ")[1]
+            jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
+        except :
+            return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            try:
+                token_info = jwt_decode_handler(token)  # decrypting the token
+                pass
+            except :
+                return Response({"error": "token can't be decrypted"}, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                MainUserID = User.objects.get(email=token_info["email"]).id
+                
+                que = Q()
+                friends = FriendshipModel.objects.get(user=MainUserID)
+                dataSerializer = FriendshipSerializer(friends).data
+                friendsList = dataSerializer['friendsList']
+                for des in friendsList:
+                    que = que | Q(user_id=des)
+                que = que | Q(user_id=MainUserID)
+                posts = PostsModel.objects.filter(group=False).filter(que)
+                postSerializer = PostsSerializer(posts, many=True)
+                postJson = postSerializer.data
+                postJson.reverse()
+                for post in postJson:
+                    user = User.objects.get(pk=int(post['user']))
+                    prof = ProfileModel.objects.get(user=user)
+                    post['user'] = {"image":settings.BASE_URL+prof.image.url, "name":prof.name, "id": post['user']}
+                    likes = []
+                    boolValue = False
+                    for id in post['likes']:
+                        if MainUserID == id:
+                            boolValue = True
+                        user = User.objects.get(pk=id)
+                        prof = ProfileModel.objects.get(user=user)
+                        likes.append({"image":settings.BASE_URL+prof.image.url,"name":prof.name, "id": id})
+                    post['likes'] = likes
+                    if boolValue:
+                        post['liked'] = True
+                    else:
+                        post['liked'] = False
+                    comments = []
+                    commentsReverse = post['comments']
+                    # reversed(commentsReverse)
+                    commentsReverse.reverse()
+                    for id in commentsReverse:
+                        comment = CommentModel.objects.get(pk=id)
+                        user = comment.user
+                        text = comment.text
+                        prof = ProfileModel.objects.get(user=user)
+                        comments.append({"image":settings.BASE_URL+prof.image.url,"name":prof.name, "id": user.id, "text":text})
+                    post['comments'] = comments
+                return Response(postJson, status=status.HTTP_200_OK)
+    
+
 class postGetView(APIView):
-  # get a post with ID
+  # get wall post with ID
   def get(self, request, pk):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
@@ -235,33 +294,92 @@ class postGetView(APIView):
               return Response(status=status.HTTP_400_BAD_REQUEST)
         
 
+class postComment(APIView):
+    # comment post
+  def post(self, request, pk):
+    try:
+        token = request.META.get('HTTP_AUTHORIZATION', '')
+        token = token.split(" ")[1]
+        jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
+    except :
+        return Response({"error": "2-user isn't authorized"}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        try:
+            token_info = jwt_decode_handler(token)  # decrypting the token
+        except :
+            return Response({"error": "token can't be decrypted"}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            # getting user from the email sent in
+            user = User.objects.get(email=token_info["email"])
+            posts = PostsModel.objects.get(pk=pk)
+            comment = CommentModel.objects.create(user=user, text=request.data['commentText'])
+            posts.comments.add(comment)
+            posts.save()
+            serializer = PostsSerializer(posts)
+            postS = serializer.data
+            user = User.objects.get(pk=int(postS['user']))
+            postS['user'] = {"name":ProfileModel.objects.get(user=user).name, "id": postS['user']}
+            likes = []
+            for id in postS['likes']:
+              user = User.objects.get(pk=id)
+              likes.append({"name":ProfileModel.objects.get(user=user).name, "id": id})
+            postS['likes'] = likes
+            comments = []
+            for id in postS['comments']:
+              comment = CommentModel.objects.get(pk=id)
+              user = comment.user
+              text = comment.text
+              comments.append({"name":ProfileModel.objects.get(user=user).name, "id": id, "text":text})
+            postS['comments'] = comments
+            return Response(postS, status=status.HTTP_200_OK)
+    
+
 class userProfilePageView(APIView):
   # return profile info, posts
   def get(self, request, pk):
-    user = User.objects.get(pk=pk)
+    try:
+        user = User.objects.get(pk=pk)
+    except:
+        return Response(status=status.HTTP_404_NOT_FOUND)   
+         
     profile = ProfileModel.objects.get(user=user)
     profileSerializer = ProfileSerializer(profile)
+    profileData = profileSerializer.data
+    profileData['image'] =  settings.BASE_URL + profileData['image']
+    profileData['email'] = user.email
     posts = PostsModel.objects.filter(user=user, group=False)
     postSerializer = PostsSerializer(posts, many=True)
-
     postJson = postSerializer.data
+    postJson.reverse()
     for post in postJson:
-      user = User.objects.get(pk=int(post['user']))
-      post['user'] = {"name":ProfileModel.objects.get(user=user).name, "id": post['user']}
-      likes = []
-      for id in post['likes']:
-        user = User.objects.get(pk=id)
-        likes.append({"name":ProfileModel.objects.get(user=user).name, "id": id})
-      post['likes'] = likes
-      comments = []
-      for id in post['comments']:
-        comment = CommentModel.objects.get(pk=id)
-        user = comment.user
-        text = comment.text
-        comments.append({"name":ProfileModel.objects.get(user=user).name, "id": id, "text":text})
-      post['comments'] = comments
-  
-    return Response({"profile":profileSerializer.data,"post":postJson})
+        user = User.objects.get(pk=int(post['user']))
+        prof = ProfileModel.objects.get(user=user)
+        post['user'] = {"image":settings.BASE_URL+prof.image.url, "name":prof.name, "id": post['user']}
+        likes = []
+        boolValue = False
+        for id in post['likes']:
+            if pk == id:
+                boolValue = True
+            user = User.objects.get(pk=id)
+            prof = ProfileModel.objects.get(user=user)
+            likes.append({"image":settings.BASE_URL+prof.image.url,"name":prof.name, "id": id})
+        post['likes'] = likes
+        if boolValue:
+            post['liked'] = True
+        else:
+            post['liked'] = False
+        comments = []
+        commentsReverse = post['comments']
+        # reversed(commentsReverse)
+        commentsReverse.reverse()
+        for id in commentsReverse:
+            comment = CommentModel.objects.get(pk=id)
+            user = comment.user
+            text = comment.text
+            prof = ProfileModel.objects.get(user=user)
+            comments.append({"image":settings.BASE_URL+prof.image.url,"name":prof.name, "id": user.id, "text":text})
+        post['comments'] = comments
+    return Response({"profile":profileData,"post":postJson}, status=status.HTTP_200_OK)
   
 
 class MyFriendsView(APIView):
@@ -322,7 +440,7 @@ class AllFriendsView(APIView):
 
 class PeopleView(APIView):
   # add friend
-  def post(self, request, pk):
+  def get(self, request, pk):
     try:
         token = request.META.get('HTTP_AUTHORIZATION', '')
         token = token.split(" ")[1]
@@ -408,8 +526,29 @@ class searchPeople(APIView):
             # getting user from the email sent in
             user = User.objects.get(email=token_info["email"])
             profiles = ProfileModel.objects.exclude(user=user).filter(Q(name__contains=value) | Q(mobile__contains=value))
-            serializer = ProfileSerializer(profiles, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer = ProfileSerializer2(profiles, many=True)
+            friends = FriendshipModel.objects.get(user=user)
+            serializerFriends = FriendshipSerializer(friends).data
+            friends = serializerFriends['friendsList']
+            i = 0
+            for pk in friends:
+                userFriend = User.objects.get(pk=pk)
+                print(ProfileModel.objects.get(user=userFriend).pk)
+                friends[i] = ProfileModel.objects.get(user=userFriend).pk
+                i = i + 1
+            print(friends)
+            json = serializer.data
+            for profile in json:
+                profile["image"] = settings.BASE_URL + profile["image"]
+                us = User.objects.get(profile__pk = profile['pk'])
+                profile["email"] = us.username
+                profile["userPk"] = us.pk
+                try:
+                    friends.index(profile['pk'])
+                    profile["friend"] = True
+                except:
+                    profile["friend"] = False
+            return Response(json, status=status.HTTP_200_OK)
 
 
 class FriednsRepresentation(APIView):
@@ -434,7 +573,7 @@ class FriednsRepresentation(APIView):
             nodes.append({ "id": profile["id"], "label": profile["name"], "image": settings.BASE_URL+profile["image"], "shape": 'image' })
             for user in profile["friendsList"]:
                 # edges.append({ from: profile.user.id, to: user.id, length: 150 })
-                edges.append({ "from":profile["id"], "to": user, length: 200 })
+                edges.append({ "from":profile["id"], "to": user, "length": 200 })
 
                 num = my_search(user, users, 'id')
                 if num > -1:
